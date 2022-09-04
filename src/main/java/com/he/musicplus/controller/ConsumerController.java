@@ -1,6 +1,7 @@
 package com.he.musicplus.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.he.musicplus.domain.Consumer;
 import com.he.musicplus.service.ConsumerService;
@@ -59,9 +60,21 @@ public class ConsumerController  {
             list.get(i).setBirth(ByBirth);//修改某一行数据的生日
 
             String avator = list.get(i).getAvator();//获取头像路径
-            list.get(i).setAvator("http://localhost:8888"+avator);//修改头像路径，前面加上请求头
+//            list.get(i).setAvator("http://localhost:8888"+avator);//修改头像路径，前面加上请求头
         }
 
+        return page;
+    }
+
+    /**
+     * 模糊查询用户名 以及分页
+     */
+    @RequestMapping(value = "/selectLikeUserName",method = RequestMethod.GET)
+    public Object selectLikeUserName(@RequestParam(value = "pn",defaultValue = "1") Integer pn,@RequestParam("username") String username){
+        //分页查询数据
+        Page<Consumer> consumerPage = new Page<>(pn, 3);
+        //分页查询结果
+        Page<Consumer> page = consumerService.page(consumerPage, new QueryWrapper<Consumer>().like("username",username));
         return page;
     }
 
@@ -77,7 +90,7 @@ public class ConsumerController  {
      * @return
      */
     @RequestMapping(value = "/someDelete" , method = RequestMethod.GET)
-    public Object deleteConsumer(@RequestParam("ids") List ids){
+    public Object deleteConsumer(@RequestParam("id") List ids){
         return consumerService.removeByIds(ids);
     }
     /**
@@ -108,7 +121,8 @@ public class ConsumerController  {
         //文件名=当前时间到毫秒+原来的名字
         String fileName = System.currentTimeMillis()+avatorFile.getOriginalFilename();
         //文件路径
-        String filePath = ResourceUtils.getURL("classpath:").getPath()+ "static/avatorImages";
+        String filePath =  System.getProperty("user.dir")+System.getProperty("file.separator")+"avatorImages";
+//        System.out.println("文件路径："+filePath);
         //如果文件 不存在，新增该路径
         File file1 = new File(filePath);
         if (!file1.exists()){
