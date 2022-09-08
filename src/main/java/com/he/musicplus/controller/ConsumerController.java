@@ -11,11 +11,13 @@ import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -55,9 +57,15 @@ public class ConsumerController  {
         SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");//这里可以指定日期的格式
         List<Consumer> list = page.getRecords();
         for (int i = 0;i<list.size();i++) {
-            Date birth = new SimpleDateFormat("yyyy-MM-dd").parse(list.get(i).getBirth()) ;//字符串转换为日期格式
-            String ByBirth =  sdf.format(birth);//指定日期的格式
-            list.get(i).setBirth(ByBirth);//修改某一行数据的生日
+//            Date birth = new SimpleDateFormat("yyyy-MM-dd").parse(list.get(i).getBirth()) ;//字符串转换为日期格式
+//            Date birth = list.get(i).getBirth();
+//
+//            Calendar ca = Calendar.getInstance();
+//            ca.setTime(birth);
+
+
+//            String ByBirth =  sdf.format(birth);//指定日期的格式
+//            list.get(i).setBirth(ca.getTime());//修改某一行数据的生日
 
             String avator = list.get(i).getAvator();//获取头像路径
 //            list.get(i).setAvator("http://localhost:8888"+avator);//修改头像路径，前面加上请求头
@@ -79,6 +87,14 @@ public class ConsumerController  {
     }
 
     /**
+     * 根据用户id 查询用户所有信息
+     */
+    @RequestMapping(value = "/selectByPrimaryKey",method = RequestMethod.GET)
+    public Object selectByPrimaryKey(@RequestParam("id")Integer id)  {
+
+        return consumerService.getById(id);
+    }
+    /**
      * 删除用户
      */
     @RequestMapping(value = "/delete" , method = RequestMethod.GET)
@@ -98,10 +114,11 @@ public class ConsumerController  {
      */
     @RequestMapping(value = "/update" , method = RequestMethod.POST)
     public Object updateConsumer(@RequestBody  Consumer consumer){
+
         return consumerService.updateById(consumer);
     }
     /**
-     * 添加用户
+     * 添加用户  可以用在后台添加用户和前台注册。
      */
     @RequestMapping(value = "/add" , method = RequestMethod.POST)
     public Object addConsumer(@RequestBody  Consumer consumer){
@@ -155,5 +172,33 @@ public class ConsumerController  {
         }finally {
             return jsonObject;
         }
+    }
+
+    /**
+     * 用户登录 前台
+     */
+    @RequestMapping(value = "/login",method = RequestMethod.POST)
+    public Object loginIn(@RequestBody Consumer consumer){
+        JSONObject jsonObject = new JSONObject();
+        Consumer one = consumerService.getOne(new QueryWrapper<Consumer>().eq("username", consumer.getUsername()).eq("password", consumer.getPassword()));
+        if (consumer.getUsername()==null||"".equals(consumer.getUsername())){//?username==null||username.equals("")
+            jsonObject.put(Consts.CODE,0);
+            jsonObject.put(Consts.MSG,"用户名不能为空");
+            return jsonObject;
+        }
+        if (consumer.getPassword()==null||"".equals(consumer.getPassword())){//?
+            jsonObject.put(Consts.CODE,0);
+            jsonObject.put(Consts.MSG,"密码不能为空");
+            return jsonObject;
+        }
+        if(one!=null){
+            jsonObject.put(Consts.CODE,1);
+            jsonObject.put(Consts.MSG,"登录成功");
+            jsonObject.put("userMsg",one);
+            return jsonObject;
+        }
+        jsonObject.put(Consts.CODE,0);
+        jsonObject.put(Consts.MSG,"用户名或密码错误");
+        return jsonObject;
     }
 }

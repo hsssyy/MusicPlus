@@ -32,7 +32,7 @@ public class SongController {
      * 添加歌曲
      */
     @RequestMapping(value = "/add" , method = RequestMethod.POST)
-    public Object addSong(@RequestParam("file") MultipartFile url,@RequestBody Song song)  {
+    public Object addSong(@RequestBody Song song)  {
 
         Date date = new Date(System.currentTimeMillis());//获取当前时间。
         if(song.getCreateTime()==null){
@@ -91,7 +91,7 @@ public class SongController {
     }
 
     /**
-     * 根据歌手id查询歌曲
+     * 根据歌手id查询歌曲  用在后台分页
      */
     @RequestMapping(value = "/singer/selectSongs",method = RequestMethod.GET)
     public Object songOfSingerId(@RequestParam("singerId") Integer singerId,@RequestParam(value = "pn",defaultValue = "1") Integer pn){
@@ -100,6 +100,17 @@ public class SongController {
         //分页查询结果
         Page<Song> page = songService.page(songPage, new QueryWrapper<Song>().eq("singer_id",singerId));
         return page;
+    }
+
+    /**
+     * 用在前台 歌手中的歌单
+     * @param singerId
+     * @return
+     */
+    @RequestMapping(value = "/singer/songsOfSingerId",method = RequestMethod.GET)
+    public Object songsOfSingerId(@RequestParam("singerId") Integer singerId){
+
+        return songService.listMaps(new QueryWrapper<Song>().eq("singer_id",singerId));
     }
     /**
      * 更新歌曲图片
@@ -180,10 +191,18 @@ public class SongController {
         return songService.getOne(new QueryWrapper<Song>().eq("name",name));
     }
     /**
-     * 根据歌曲id 查询该歌曲
+     * 根据歌曲id 查询该歌曲  前台也使用了  用在歌单的列表查询返回
      */
     @RequestMapping(value = "/songBySongId" , method = RequestMethod.GET)
     public Object selectSongBySongId(@RequestParam("songId") Integer songId){
         return songService.getOne(new QueryWrapper<Song>().eq("id",songId));
     }
+    /**
+     * 模糊查询 根据歌手名字
+     */
+    @RequestMapping(value = "/likeSongName",method = RequestMethod.GET)
+    public Object likeSongName(@RequestParam("songName") String name){
+        return songService.listMaps(new QueryWrapper<Song>().like("name",name));
+    }
+
 }

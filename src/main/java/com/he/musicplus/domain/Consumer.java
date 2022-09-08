@@ -50,7 +50,7 @@ public class Consumer implements Serializable {
     /**
      * 
      */
-    private String birth;
+    private Date birth;
 
     /**
      * 

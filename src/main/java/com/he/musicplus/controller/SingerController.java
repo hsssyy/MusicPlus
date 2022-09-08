@@ -1,12 +1,19 @@
 package com.he.musicplus.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.he.musicplus.domain.Consumer;
 import com.he.musicplus.domain.Singer;
 import com.he.musicplus.service.SingerService;
+import com.he.musicplus.utils.Consts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,9 +34,9 @@ public class SingerController {
      * @return
      */
     @RequestMapping(value = "/allSinger", method = RequestMethod.GET)
-    public Object allConsumer(@RequestParam(value = "pn", defaultValue = "1") Integer pn) throws ParseException {
+    public Object allSinger(@RequestParam(value = "pn", defaultValue = "1") Integer pn) throws ParseException {
         //分页查询数据
-        Page<Singer> singerPage = new Page<>(pn, 3);
+        Page<Singer> singerPage = new Page<>(pn, 5);
         //分页查询结果
         Page<Singer> page = singerService.page(singerPage, null);
 
@@ -42,6 +49,26 @@ public class SingerController {
             list.get(i).setBirth(ByBirth);//修改某一行数据的生日
         }
         return page;
+    }
+
+       /**
+     * 查询歌手返回前10条  用在前台展示
+     * @return
+     * @throws ParseException
+     */
+    @RequestMapping(value = "/allSingerSelect", method = RequestMethod.GET)
+    public Object allSingerSelect() throws ParseException {
+        return  singerService.listMaps(new QueryWrapper<Singer>().last("limit 10"));
+    }
+
+    /**
+     * 根据性别查询歌手    用在前台展示
+     * @return
+     * @throws ParseException
+     */
+    @RequestMapping(value = "/singerOfSex", method = RequestMethod.GET)
+    public Object singerOfSex(@RequestParam("sex") Integer sex){
+        return  singerService.listMaps(new QueryWrapper<Singer>().eq("sex",sex));
     }
 
     /**
@@ -72,10 +99,59 @@ public class SingerController {
      * 修改歌手
      */
     @RequestMapping(value = "/update" , method = RequestMethod.POST)
-    public Object updateConsumer(@RequestBody  Singer singer){
+    public Object updateSinger(@RequestBody  Singer singer){
         String singerBirth = singer.getBirth().substring(0,10);
         singer.setBirth(singerBirth);
         return singerService.updateById(singer);
+    }
+
+    /**
+     * 更新图片
+     */
+    @RequestMapping(value = "/updateSingerPic",method = RequestMethod.POST)
+    public Object updateConsumerPic(@RequestParam("file") MultipartFile avatorFile, @RequestParam("id") Integer id) throws FileNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        if (avatorFile.isEmpty()){
+            jsonObject.put(Consts.CODE,0);
+            jsonObject.put(Consts.MSG,"文件上传失败");
+            return jsonObject;
+        }
+        //文件名=当前时间到毫秒+原来的名字
+        String fileName = System.currentTimeMillis()+avatorFile.getOriginalFilename();
+        //文件路径
+        String filePath =  System.getProperty("user.dir")+System.getProperty("file.separator")+"avatorImages";
+//        System.out.println("文件路径："+filePath);
+        //如果文件 不存在，新增该路径
+        File file1 = new File(filePath);
+        if (!file1.exists()){
+            file1.mkdir();
+        }
+        //实际的文件地址
+        File dest = new File(filePath+System.getProperty("file.separator")+fileName);
+        //存储到数据库里的相对文件地址
+        String storeAvatorPath = "/avatorImages/"+fileName;
+        try {
+            avatorFile.transferTo(dest);
+            Singer singer = new Singer();
+            singer.setId(id);
+            singer.setPic(storeAvatorPath);
+            boolean flag = singerService.updateById(singer);
+            System.out.println(flag);
+            if (flag){
+                jsonObject.put(Consts.CODE,1);
+                jsonObject.put(Consts.MSG,"上传成功");
+                jsonObject.put("avator",storeAvatorPath);
+                return jsonObject;
+            }
+            jsonObject.put(Consts.CODE,0);
+            jsonObject.put(Consts.MSG,"上传失败");
+            return jsonObject;
+        } catch (IOException e) {
+            jsonObject.put(Consts.CODE,0);
+            jsonObject.put(Consts.MSG,"上传失败"+e.getMessage());
+        }finally {
+            return jsonObject;
+        }
     }
 
 }
