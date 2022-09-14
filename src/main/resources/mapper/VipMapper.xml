@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.he.musicplus.mapper.VipMapper">
+
+    <resultMap id="BaseResultMap" type="com.he.musicplus.domain.Vip">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="consumerId" column="consumer_id" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+            <result property="moneys" column="moneys" jdbcType="INTEGER"/>
+            <result property="months" column="months" jdbcType="INTEGER"/>
+            <result property="monthly" column="monthly" jdbcType="INTEGER"/>
+            <result property="level" column="level" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,consumer_id,create_time,
+        end_time,moneys,months,
+        monthly,level
+    </sql>
+</mapper>
