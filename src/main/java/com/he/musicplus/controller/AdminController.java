@@ -45,4 +45,11 @@ public class AdminController {
         jsonObject.put(Consts.CODE,2);
         return jsonObject;
     }
+    /**
+     * 通过id 查询管理员
+     */
+    @RequestMapping(value = "/admin/getNameById",method = RequestMethod.GET)
+    public Object getNameById(@RequestParam("adminId") Integer adminId ){
+        return  adminService.getById(adminId);
+    }
 }
