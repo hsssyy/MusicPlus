@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -45,10 +46,11 @@ public class VipController {
         Vip yetVip = vipService.getOne(new QueryWrapper<Vip>().eq("consumer_id",userId));
         //获取总金额  得判断是否新开通的用户  是就添加，不是就更新时间和金额
         if(yetVip!=null){
-            System.out.println(yetVip+"vvvv");
+
             Integer moneys = yetVip.getMoneys();
             yetVip.setMoneys(Integer.parseInt(payAmount)+moneys);//更新总金额
-            yetVip.setCreateTime(ChangeTime.StringChangeTime(openTime));//开通时间
+
+            yetVip.setCreateTime(ChangeTime.StringChangeTime(openTime) );//开通时间
             yetVip.setEndTime(ChangeTime.StringChangeTime(duedate));//结束时间
             yetVip.setMonthly(Integer.parseInt(selectMonth));
             flag = vipService.updateById(yetVip);
