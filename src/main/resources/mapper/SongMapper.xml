@@ -14,11 +14,13 @@
             <result property="pic" column="pic" jdbcType="VARCHAR"/>
             <result property="lyric" column="lyric" jdbcType="VARCHAR"/>
             <result property="url" column="url" jdbcType="VARCHAR"/>
+            <result property="setVip" column="set_vip" jdbcType="BOOLEAN"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,singer_id,name,
         introduction,create_time,update_time,
-        pic,lyric,url
+        pic,lyric,url,
+        set_vip
     </sql>
 </mapper>

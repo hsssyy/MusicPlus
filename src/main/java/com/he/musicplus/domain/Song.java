@@ -61,6 +61,11 @@ public class Song implements Serializable {
      */
     private String url;
 
+    /**
+     * 
+     */
+    private Byte setVip;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

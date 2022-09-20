@@ -3,8 +3,13 @@ package com.he.musicplus.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.he.musicplus.domain.Consumer;
+import com.he.musicplus.domain.Vip;
+import com.he.musicplus.domain.VipConsumer;
 import com.he.musicplus.service.ConsumerService;
+import com.he.musicplus.service.VipService;
+import com.he.musicplus.utils.ChangeTime;
 import com.he.musicplus.utils.Consts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
@@ -17,9 +22,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
 /**
  * 用户控制类
@@ -29,8 +33,10 @@ import java.util.List;
 public class ConsumerController  {
     @Autowired
     private ConsumerService consumerService;
+    @Autowired
+    private VipService vipService;
     /**
-     * 查询所有用户 以及分页
+     * 查询普通用户 以及分页
      * @return
      */
     @RequestMapping(value = "/allConsumer",method = RequestMethod.GET)
@@ -52,21 +58,13 @@ public class ConsumerController  {
         Page<Consumer> consumerPage = new Page<>(pn, 3);
         //分页查询结果
         Page<Consumer> page = consumerService.page(consumerPage, null);
+        QueryWrapper<Vip> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.
 
         Date time = null;
         SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");//这里可以指定日期的格式
         List<Consumer> list = page.getRecords();
         for (int i = 0;i<list.size();i++) {
-//            Date birth = new SimpleDateFormat("yyyy-MM-dd").parse(list.get(i).getBirth()) ;//字符串转换为日期格式
-//            Date birth = list.get(i).getBirth();
-//
-//            Calendar ca = Calendar.getInstance();
-//            ca.setTime(birth);
-
-
-//            String ByBirth =  sdf.format(birth);//指定日期的格式
-//            list.get(i).setBirth(ca.getTime());//修改某一行数据的生日
-
             String avator = list.get(i).getAvator();//获取头像路径
 //            list.get(i).setAvator("http://localhost:8888"+avator);//修改头像路径，前面加上请求头
         }
@@ -74,6 +72,50 @@ public class ConsumerController  {
         return page;
     }
 
+    /**
+     * 查询VIP用户  会员没过期
+     */
+    @RequestMapping(value = "/allVipConsumer",method = RequestMethod.GET)
+    public Object allVipConsumer(@RequestParam(value = "pn",defaultValue = "1") Integer pn) throws ParseException{
+        JSONObject jsonObject = new JSONObject();
+        //分页查询出VIP表的 数据
+        Page<Vip> vipPage = new Page<>(pn, 3);
+
+        SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date(System.currentTimeMillis());
+        System.out.println(formatter.format(date));
+
+        //分页查询结果
+        Page<Vip> page = vipService.page(vipPage,new QueryWrapper<Vip>().gt("end_time",formatter.format(date)));
+        List<Vip> list = page.getRecords();
+
+        List<VipConsumer> vipConsumers = new ArrayList<>();
+        for (int i = 0; i<list.size(); i++) {
+
+            Consumer one = consumerService.getOne(new QueryWrapper<Consumer>().eq("id", list.get(i).getConsumerId()));
+            VipConsumer vip = new VipConsumer();
+            vip.setId(one.getId());
+            vip.setUsername(one.getUsername());
+            vip.setSex(one.getSex());
+            vip.setBirth(one.getBirth());
+            vip.setEmail(one.getEmail());
+            vip.setIntroduction(one.getIntroduction());
+            vip.setLocation(one.getLocation());
+            vip.setAvator(one.getAvator());
+
+            vip.setPhoneNum(one.getPhoneNum());
+            vip.setCreateTimeVip(list.get(i).getCreateTime());
+            vip.setEndTime(list.get(i).getEndTime());
+            vip.setMoneys(list.get(i).getMoneys());
+            vip.setLevel(list.get(i).getLevel());
+            vipConsumers.add(vip);
+        }
+
+        jsonObject.put("records",vipConsumers);
+        jsonObject.put("size",page.getSize());
+        jsonObject.put("total",page.getTotal());
+        return jsonObject;
+    }
     /**
      * 模糊查询用户名 以及分页
      */
@@ -121,7 +163,14 @@ public class ConsumerController  {
      * 添加用户  可以用在后台添加用户和前台注册。
      */
     @RequestMapping(value = "/add" , method = RequestMethod.POST)
-    public Object addConsumer(@RequestBody  Consumer consumer){
+    public Object addConsumer(@RequestBody  Consumer consumer) throws ParseException {
+        Date birth = consumer.getBirth();
+        SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+        String birthday = sdf.format(birth);
+        consumer.setBirth(ChangeTime.StringChangeTime(birthday));
+        Date nowTime = new Date();
+        String now = sdf.format(nowTime);
+        consumer.setCreateTime(ChangeTime.StringChangeTime(now));
         return consumerService.save(consumer);
     }
     /**
@@ -201,4 +250,12 @@ public class ConsumerController  {
         jsonObject.put(Consts.MSG,"用户名或密码错误");
         return jsonObject;
     }
+    /**
+     * 根据id 查询用户
+     */
+    @RequestMapping(value = "/getUserOfId",method = RequestMethod.GET)
+    public Object getUserByOfId(@RequestParam("id")Integer id){
+        return consumerService.getById(id);
+    }
+
 }

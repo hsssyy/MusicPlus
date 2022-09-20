@@ -2,14 +2,20 @@ package com.he.musicplus.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.he.musicplus.domain.Comment;
 import com.he.musicplus.service.CommentService;
+import com.he.musicplus.utils.ChangeTime;
 import com.he.musicplus.utils.Consts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 评论控制类
@@ -34,13 +40,26 @@ public class CommentController {
         return commentService.listMaps(new QueryWrapper<Comment>().eq("song_list_id",songListId));
     }
     /**
+     * 查询某个歌单下的所有评论 以及分页
+     */
+    @RequestMapping(value = "/commentOfSongListIdPage",method = RequestMethod.GET)
+    public Object commentOfSongListIdPage(@RequestParam(value = "pn",defaultValue = "1") Integer pn, @RequestParam("songListId") Integer songListId)  {
+        Page<Comment> page = new Page<>(pn,10);
+        Page<Comment> commentPage = commentService.page(page, new QueryWrapper<Comment>().eq("song_list_id", songListId));
+
+        for(int i = 0; i<commentPage.getTotal();i++){
+
+        }
+        return commentPage;
+    }
+    /**
      * 添加评论
      */
     /**
      * 添加评论
      */
     @RequestMapping(value = "/add",method = RequestMethod.POST)
-    public Object addComment(HttpServletRequest request)  {
+    public Object addComment(HttpServletRequest request) throws ParseException {
         JSONObject jsonObject = new JSONObject();
         String userId = request.getParameter("userId"); // 用户id
         String type = request.getParameter("type");  //评论类型（0歌曲1歌单）
@@ -48,11 +67,18 @@ public class CommentController {
         String songListId = request.getParameter("songListId"); //歌单id
         String content = request.getParameter("content").trim();//评论内容
 
+        //获取当前时间
+        Date date = new Date();
+        SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+        String createTime = sdf.format(date);
+
         //保存到评论的对象中
         Comment comment = new Comment();
 //        Byte by = Byte.parseByte(type);
         comment.setUserId(Integer.parseInt(userId));
+        comment.setCreateTime(ChangeTime.StringChangeTime(createTime));
         comment.setType(new Byte(type));
+
         comment.setUp(0);//初始值点赞数为 0
         if (new Byte(type) == 0){
             comment.setSongId(Integer.parseInt(songId));
@@ -91,6 +117,32 @@ public class CommentController {
         jsonObject.put(Consts.CODE,0);
         jsonObject.put(Consts.MSG,"点赞失败");
         return jsonObject;
+    }
+    /**
+     * 更新评论
+     */
+    @RequestMapping(value = "/updateCom",method = RequestMethod.POST)
+    public Object updateComment(@RequestBody Comment comment){
+        return commentService.updateById(comment);
+    }
+
+    /**
+     * 删除一条评论
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/delComment",method = RequestMethod.GET)
+    public Object deleteComment(@RequestParam("id") Integer id){
+        return  commentService.removeById(id);
+    }
+
+    /**
+     * 批量删除评论
+     * @return
+     */
+    @RequestMapping(value = "/someDelete" , method = RequestMethod.GET)
+    public Object deleteConsumer(@RequestParam("id") List ids){
+        return commentService.removeByIds(ids);
     }
 
 }

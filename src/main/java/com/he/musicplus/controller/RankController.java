@@ -42,4 +42,12 @@ public class RankController {
     public Object addRank(@RequestBody Rank rank){
         return rankService.save(rank);
     }
+    /**
+     *根据用户id 和 歌单id 获取自己的评分
+     */
+    @RequestMapping(value = "/rank/scoreByUserIdAndSongListId",method = RequestMethod.GET)
+    public Object getScore(@RequestParam("userId")Integer userId ,@RequestParam("songListId")Integer songListId ){
+        return rankService.getOne(new QueryWrapper<Rank>().eq("consumer_id",userId).eq("song_list_id",songListId));
+    }
+
 }

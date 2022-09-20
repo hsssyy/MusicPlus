@@ -1,16 +1,23 @@
 package com.he.musicplus.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.he.musicplus.domain.Consumer;
 import com.he.musicplus.domain.Singer;
+import com.he.musicplus.domain.Song;
 import com.he.musicplus.domain.SongList;
 import com.he.musicplus.service.SingerService;
 import com.he.musicplus.service.SongListService;
+import com.he.musicplus.utils.Consts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -93,6 +100,60 @@ public class SongListController {
     @RequestMapping(value = "/update" , method = RequestMethod.POST)
     public Object updateConsumer(@RequestBody  SongList songList){
         return songListService.updateById(songList);
+    }
+    /**
+     * 更新歌单图片
+     */
+    @RequestMapping(value = "/updateSongListPic",method = RequestMethod.POST)
+    public Object updateConsumerPic(@RequestParam("file") MultipartFile avatorFile, @RequestParam("id") Integer id) throws FileNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        if (avatorFile.isEmpty()){
+            jsonObject.put(Consts.CODE,0);
+            jsonObject.put(Consts.MSG,"文件上传失败");
+            return jsonObject;
+        }
+        //文件名=当前时间到毫秒+原来的名字
+        String fileName = System.currentTimeMillis()+avatorFile.getOriginalFilename();
+        //问件路径
+        String filePath = System.getProperty("user.dir")+System.getProperty("file.separator")+"img"
+                +System.getProperty("file.separator")+"songListPic";
+        //如果文件 不存在，新增该路径
+        File file1 = new File(filePath);
+        if (!file1.exists()){
+            file1.mkdir();
+        }
+        //实际的文件地址
+        File dest = new File(filePath+System.getProperty("file.separator")+fileName);
+        //存储到数据库里的相对文件地址
+        String storeAvatorPath = "/img/songListPic/"+fileName;
+        try {
+            avatorFile.transferTo(dest);
+            SongList songList = new SongList();
+            songList.setId(id);
+            songList.setPic(storeAvatorPath);
+            boolean flag = songListService.updateById(songList);
+            if (flag){
+                jsonObject.put(Consts.CODE,1);
+                jsonObject.put(Consts.MSG,"上传成功");
+                jsonObject.put("pic",storeAvatorPath);
+                return jsonObject;
+            }
+            jsonObject.put(Consts.CODE,0);
+            jsonObject.put(Consts.MSG,"上传失败");
+            return jsonObject;
+        } catch (IOException e) {
+            jsonObject.put(Consts.CODE,0);
+            jsonObject.put(Consts.MSG,"上传失败"+e.getMessage());
+        }finally {
+            return jsonObject;
+        }
+    }
+    /**
+     * 根据歌单id 查询歌单信息
+     */
+    @RequestMapping(value = "/getSongListInfoById" , method = RequestMethod.GET)
+    public Object getSongListInfoById(@RequestParam("id") Integer id){
+        return songListService.getById(id);
     }
 
 

@@ -204,5 +204,23 @@ public class SongController {
     public Object likeSongName(@RequestParam("songName") String name){
         return songService.listMaps(new QueryWrapper<Song>().like("name",name));
     }
+    /**
+     * 设置歌曲为VIP
+     */
+    @RequestMapping(value = "/setVip",method = RequestMethod.GET)
+    public Object setVip(@RequestParam("id")Integer id){
+        Song song = new Song();
+        song.setSetVip((byte) 1);
+        return songService.update(song,new QueryWrapper<Song>().eq("id",id));
+    }
+    /**
+     * 取消歌曲为VIP
+     */
+    @RequestMapping(value = "/removeVip",method = RequestMethod.GET)
+    public Object removeVip(@RequestParam("id")Integer id){
+        Song song = new Song();
+        song.setSetVip((byte) 0);
+        return songService.update(song,new QueryWrapper<Song>().eq("id",id));
+    }
 
 }

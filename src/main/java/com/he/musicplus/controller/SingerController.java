@@ -70,6 +70,15 @@ public class SingerController {
     public Object singerOfSex(@RequestParam("sex") Integer sex){
         return  singerService.listMaps(new QueryWrapper<Singer>().eq("sex",sex));
     }
+    /**
+     * 根据id查询歌手 信息   用在前台展示
+     * @return
+     * @throws ParseException
+     */
+    @RequestMapping(value = "/singerOfId", method = RequestMethod.GET)
+    public Object singerOfId(@RequestParam("id") Integer id){
+        return  singerService.getById(id);
+    }
 
     /**
      * 删除歌手

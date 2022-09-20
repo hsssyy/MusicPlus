@@ -27,7 +27,8 @@ public class AdminController {
         if(one!=null){
             jsonObject.put(Consts.CODE,1);
             jsonObject.put(Consts.MSG,"登录成功");
-            session.setAttribute("name",name);
+//            session.setAttribute("name",name);
+            jsonObject.put("adminMsg",one);
             return jsonObject;
         }
         jsonObject.put(Consts.CODE,0);
@@ -49,7 +50,11 @@ public class AdminController {
      * 通过id 查询管理员
      */
     @RequestMapping(value = "/admin/getNameById",method = RequestMethod.GET)
-    public Object getNameById(@RequestParam("adminId") Integer adminId ){
-        return  adminService.getById(adminId);
+    public String getNameById(@RequestParam("adminId") Integer adminId ){
+        JSONObject jsonObject = new JSONObject();
+
+        Admin one = adminService.getById(adminId);
+        jsonObject.put("name",one.getName());
+        return one.getName();
     }
 }
