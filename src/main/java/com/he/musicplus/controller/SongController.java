@@ -54,7 +54,7 @@ public class SongController {
             return jsonObject;
         }
         //文件名=当前时间到毫秒+原来的名字
-        String fileName = System.currentTimeMillis()+url.getOriginalFilename();
+        String fileName = System.currentTimeMillis()+"";
         //问件路径
         String filePath = System.getProperty("user.dir")+System.getProperty("file.separator")+"song";
         //如果文件 不存在，新增该路径
@@ -124,7 +124,7 @@ public class SongController {
             return jsonObject;
         }
         //文件名=当前时间到毫秒+原来的名字
-        String fileName = System.currentTimeMillis()+avatorFile.getOriginalFilename();
+        String fileName = System.currentTimeMillis()+"";
         //问件路径
         String filePath = System.getProperty("user.dir")+System.getProperty("file.separator")+"img"
                 +System.getProperty("file.separator")+"songPic";

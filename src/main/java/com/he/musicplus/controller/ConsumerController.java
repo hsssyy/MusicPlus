@@ -55,7 +55,7 @@ public class ConsumerController  {
 //    }
         public Object allConsumer(@RequestParam(value = "pn",defaultValue = "1") Integer pn) throws ParseException {
         //分页查询数据
-        Page<Consumer> consumerPage = new Page<>(pn, 3);
+        Page<Consumer> consumerPage = new Page<>(pn, 5);
         //分页查询结果
         Page<Consumer> page = consumerService.page(consumerPage, null);
         QueryWrapper<Vip> queryWrapper = new QueryWrapper<>();
@@ -79,7 +79,7 @@ public class ConsumerController  {
     public Object allVipConsumer(@RequestParam(value = "pn",defaultValue = "1") Integer pn) throws ParseException{
         JSONObject jsonObject = new JSONObject();
         //分页查询出VIP表的 数据
-        Page<Vip> vipPage = new Page<>(pn, 3);
+        Page<Vip> vipPage = new Page<>(pn, 5);
 
         SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = new Date(System.currentTimeMillis());
@@ -122,7 +122,7 @@ public class ConsumerController  {
     @RequestMapping(value = "/selectLikeUserName",method = RequestMethod.GET)
     public Object selectLikeUserName(@RequestParam(value = "pn",defaultValue = "1") Integer pn,@RequestParam("username") String username){
         //分页查询数据
-        Page<Consumer> consumerPage = new Page<>(pn, 3);
+        Page<Consumer> consumerPage = new Page<>(pn, 5);
         //分页查询结果
         Page<Consumer> page = consumerService.page(consumerPage, new QueryWrapper<Consumer>().like("username",username));
         return page;
@@ -133,7 +133,6 @@ public class ConsumerController  {
      */
     @RequestMapping(value = "/selectByPrimaryKey",method = RequestMethod.GET)
     public Object selectByPrimaryKey(@RequestParam("id")Integer id)  {
-
         return consumerService.getById(id);
     }
     /**

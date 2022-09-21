@@ -40,7 +40,7 @@ public class SongListController {
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public Object allConsumer(@RequestParam(value = "pn", defaultValue = "1") Integer pn) throws ParseException {
         //分页查询数据
-        Page<SongList> songListPage = new Page<>(pn, 5);
+        Page<SongList> songListPage = new Page<>(pn, 10);
         //分页查询结果
         Page<SongList> page = songListService.page(songListPage,null);
 
@@ -60,9 +60,13 @@ public class SongListController {
      *
      */
     @RequestMapping(value = "/likeTitle",method = RequestMethod.GET)
-    public Object songListLikeTitle(@RequestParam("title") String title){
-        return  songListService.listMaps(new QueryWrapper<SongList>().like("title",title));
+    public Object songListLikeTitle(@RequestParam(value = "pn", defaultValue = "1") Integer pn,@RequestParam("title") String title){
+        //分页查询数据
+        Page<SongList> songListPage = new Page<>(pn, 10);
+        Page<SongList> page = songListService.page(songListPage,new QueryWrapper<SongList>().like("title",title));
+        return  page;
     }
+
 
     /**
      * 根据风格(style)模糊查询歌单列表

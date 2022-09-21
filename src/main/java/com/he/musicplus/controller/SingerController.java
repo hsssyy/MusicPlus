@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.he.musicplus.domain.Consumer;
 import com.he.musicplus.domain.Singer;
 import com.he.musicplus.service.SingerService;
+import com.he.musicplus.utils.ChangeTime;
 import com.he.musicplus.utils.Consts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 歌手控制类
@@ -44,9 +46,9 @@ public class SingerController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");//这里可以指定日期的格式
         List<Singer> list = page.getRecords();
         for (int i = 0; i < list.size(); i++) {
-            Date birth = new SimpleDateFormat("yyyy-MM-dd").parse(list.get(i).getBirth());//字符串转换为日期格式
-            String ByBirth = sdf.format(birth);//指定日期的格式
-            list.get(i).setBirth(ByBirth);//修改某一行数据的生日
+//            Date birth = list.get(i).getBirth();//字符串转换为日期格式
+//            String ByBirth = sdf.format(birth);//指定日期的格式
+//            list.get(i).setBirth(ChangeTime.StringChangeTime(ByBirth));//修改某一行数据的生日
         }
         return page;
     }
@@ -58,7 +60,14 @@ public class SingerController {
      */
     @RequestMapping(value = "/allSingerSelect", method = RequestMethod.GET)
     public Object allSingerSelect() throws ParseException {
-        return  singerService.listMaps(new QueryWrapper<Singer>().last("limit 10"));
+        List<Singer> list = singerService.list(new QueryWrapper<Singer>().last("limit 10"));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//这里可以指定日期的格式
+        for (int i = 0; i < list.size(); i++) {
+            Date birth =  list.get(i).getBirth();//字符串转换为日期格式
+            String ByBirth = sdf.format(birth);//指定日期的格式
+            list.get(i).setBirth(ChangeTime.StringChangeTime(ByBirth));//修改某一行数据的生日
+        }
+        return   singerService.listMaps(new QueryWrapper<Singer>().last("limit 10"));
     }
 
     /**
@@ -100,17 +109,19 @@ public class SingerController {
      */
     @RequestMapping(value = "/add" , method = RequestMethod.POST)
     public Object addConsumer(@RequestBody Singer singer)  {
-        String singerBirth = singer.getBirth().substring(0,9);
-        singer.setBirth(singerBirth);
         return singerService.save(singer);
     }
     /**
      * 修改歌手
      */
     @RequestMapping(value = "/update" , method = RequestMethod.POST)
-    public Object updateSinger(@RequestBody  Singer singer){
-        String singerBirth = singer.getBirth().substring(0,10);
-        singer.setBirth(singerBirth);
+    public Object updateSinger(@RequestBody  Singer singer) throws ParseException {
+        Date birth = singer.getBirth();
+        System.out.println();
+        SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+        String birthday = sdf.format(birth);
+        singer.setBirth(ChangeTime.StringChangeTime(birthday));
+
         return singerService.updateById(singer);
     }
 

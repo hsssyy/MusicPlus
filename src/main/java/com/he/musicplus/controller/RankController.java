@@ -7,6 +7,7 @@ import com.he.musicplus.service.RankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
@@ -38,10 +39,6 @@ public class RankController {
         }
         return sumScore/nums;//返回平均分
     }
-    @RequestMapping(value = "/rank/add",method = RequestMethod.POST)
-    public Object addRank(@RequestBody Rank rank){
-        return rankService.save(rank);
-    }
     /**
      *根据用户id 和 歌单id 获取自己的评分
      */
@@ -49,5 +46,22 @@ public class RankController {
     public Object getScore(@RequestParam("userId")Integer userId ,@RequestParam("songListId")Integer songListId ){
         return rankService.getOne(new QueryWrapper<Rank>().eq("consumer_id",userId).eq("song_list_id",songListId));
     }
+    /**
+     * 提价评价
+     */
+    @RequestMapping(value = "/rank/add",method = RequestMethod.POST)
+    public Object addRankByUserId(HttpServletRequest request){
+        String songListId = request.getParameter("songListId");
+        String consumerId = request.getParameter("consumerId");
+        String score = request.getParameter("score");
+
+        Rank rank =  new Rank();
+        rank.setConsumerId(Integer.parseInt(consumerId));
+        rank.setSongListId(Integer.parseInt(songListId));
+        rank.setScore(Integer.parseInt(score));
+
+        return rankService.save(rank);
+    }
+
 
 }
